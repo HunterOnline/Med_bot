@@ -433,8 +433,8 @@ async def ondasetron_calculate(message: types.Message, state: FSMContext):
         if float_persent <= 0:
             raise ZeroDivisionError('🤦‍♂️тупарь!')
         mg_ml = float_persent * 1000 / 100
-        enter_ml = {'vv_or_vk_4': f'{4 / mg_ml:.2f} ml(2мг)',
-                    'vv_or_vk_8': f'{8 / mg_ml:.2f} ml(4мг)'}
+        enter_ml = {'vv_or_vk_4': f'{4 / mg_ml:.2f} ml(4мг)',
+                    'vv_or_vk_8': f'{8 / mg_ml:.2f} ml(8мг)'}
         await state.finish()
         table = pt.PrettyTable(['Введення', 'Доза'])
         table.title = f'ДОЗА {float_persent}% ОНДАСЕТРОНУ в ml'
