@@ -417,21 +417,11 @@ async def nalokson_calculate(message: types.Message, state: FSMContext):
 async def ondasetron(call: types.CallbackQuery, ):
     await call.message.delete()
 
-    table = pt.PrettyTable(['Введення', 'Доза'])
-    table.title = 'ОНДАСЕТРОН'
+    table = pt.PrettyTable(['ОНДАСЕТРОН'])
 
-    table.align['Введення'] = 'l'
-    table.align['Доза'] = 'r'
-    data = [
-        ('в/в', '2мг на 8год'),
-        ('в/к', '2мг на 8год'),
-        ('в/м', '2мг на 8год'),
+    table.add_row(['В перші 8 годин 4 мг,\nякщо не допомогло через\n15 хв ще 4 мг, наступні\nкожні 8 годин не більше\n8 мг'])
 
-    ]
-    table.add_row(['Загальна доза', '\u22658мг на добу'])
 
-    for intro, dose in data:
-        table.add_row([f'{intro}', f'{dose}'])
     await dp.bot.send_message(chat_id=call.from_user.id, text=f'<pre>🤢протиблювотний\n{table}</pre>',
                               parse_mode=types.ParseMode.HTML, reply_markup=manipulations_keyboard)
 
@@ -443,8 +433,8 @@ async def ondasetron_calculate(message: types.Message, state: FSMContext):
         if float_persent <= 0:
             raise ZeroDivisionError('🤦‍♂️тупарь!')
         mg_ml = float_persent * 1000 / 100
-        enter_ml = {'vv_or_vk': f'{2 / mg_ml:.2f} ml'
-                    }
+        enter_ml = {'vv_or_vk_4': f'{4 / mg_ml:.2f} ml(2мг)',
+                    'vv_or_vk_8': f'{8 / mg_ml:.2f} ml(4мг)'}
         await state.finish()
         table = pt.PrettyTable(['Введення', 'Доза'])
         table.title = f'ДОЗА {float_persent}% ОНДАСЕТРОНУ в ml'
@@ -452,9 +442,9 @@ async def ondasetron_calculate(message: types.Message, state: FSMContext):
         table.align['Доза'] = 'r'
 
         data = [
-            ('в/в', f"{enter_ml['vv_or_vk']} на 8год"),
-            ('в/к', f"{enter_ml['vv_or_vk']} на 8год"),
-            ('в/м', f"{enter_ml['vv_or_vk']} на 8год"),
+            ('в/в,в/к,в/м', f"{enter_ml['vv_or_vk_4']}"),
+            ('в/в,в/к,в/м', f"{enter_ml['vv_or_vk_8']}"),
+
 
         ]
         for intro, dose in data:

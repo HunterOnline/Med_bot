@@ -2,7 +2,7 @@
 from aiogram import types
 
 from data.config import ADMINS
-from loader import dp, db_user
+from loader import dp
 from aiogram.dispatcher.filters import Command
 
 
