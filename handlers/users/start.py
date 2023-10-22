@@ -12,7 +12,6 @@ async def bot_start(message: types.Message):
     await message.answer(
         f'Привіт, {message.from_user.full_name}!\n🏥..🚑...МeDbot на зв\'язку!\n В мене поки що невеликий функціонал, працюю в тестовому режимі!',
         reply_markup=main_button)
-    print (await quick_commands.select_all_users())
     try:
             user_id = message.from_user.id
             name = message.from_user.get_mention()
