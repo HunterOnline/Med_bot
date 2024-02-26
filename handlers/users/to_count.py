@@ -5,8 +5,7 @@ from aiogram import types
 from aiogram.dispatcher import FSMContext
 
 from keyboards.default.main_button import main_button
-from keyboards.inline.drugs_buttons import drugs_list_keyboard, drugs_callback, manipulations_keyboard, \
-    back_drug_keyboard
+from keyboards.inline.drugs_buttons import drugs_list_keyboard, drugs_callback, manipulations_keyboard, back_drug_keyboard
 from keyboards.inline.fix_buttons import fix_keyboard, fix_callback
 from loader import dp, bot
 from states.fix_state import FixMessage, CalcMessage
@@ -32,54 +31,72 @@ async def calculate_burns(message: types.Message, state: FSMContext):
 
     except Exception as e:
             print(e)
-
-
-    await message.answer("<b>🚩Введіть <u>ВАГУ</u> в кілограмах\n(має бути одне число❗)</b>", reply_markup=main_button)
-    await FixMessage.EnterWeight.set()
+    await bot.send_chat_action(message.chat.id, types.ChatActions.TYPING)
+    # Чекаємо 1 секунди з використанням асинхронності
+    await asyncio.sleep(0.5)
+    with open('data/схема_опіки.jpg', 'rb') as photo:
+        await message.answer_photo(photo=photo,caption="<b>🚩Введіть кількість <u>ОПІКІВ</u> у відсотках\n(має бути одне число❗)</b>", reply_markup=main_button)
+    await FixMessage.EnterBurns.set()
     logging.info(message.from_user.full_name + " -> pressed [Розрахунки при опіках 🔥]")
-    await set_reset_timer(user_id=message.from_user.id, state=state, timeout_seconds=90)
+   # await set_reset_timer(user_id=message.from_user.id, state=state, timeout_seconds=90)
+
+
+@dp.message_handler(state=FixMessage.EnterBurns)
+async def enter_burns(message: types.Message, state: FSMContext):
+    if message.text.strip().isdigit():
+        await state.update_data(burns=message.text, mention=message.from_user.get_mention())
+        await bot.send_chat_action(message.chat.id, types.ChatActions.TYPING)
+        # Чекаємо 1 секунди з використанням асинхронності
+        await asyncio.sleep(0.5)
+        await message.answer(f'<b>🚩Введіть <u>ВАГУ</u> в кілограмах\n(має бути одне число❗)</b>')
+        await FixMessage.next()
+
+    else:
+        await state.update_data(burns=message.text, mention=message.from_user.get_mention())
+        await bot.send_chat_action(message.chat.id, types.ChatActions.TYPING)
+        # Чекаємо 1 секунди з використанням асинхронності
+        await asyncio.sleep(0.5)
+        await message.answer(
+
+            f'<b>⛔Некоректне значення!\nСпробуй ще, введіть кількість <u>ОПІКІВ</u> у відсотках\n(має бути одне число❗)</b>',
+            reply_markup=fix_keyboard)
 
 
 @dp.message_handler(state=FixMessage.EnterWeight)
 async def enter_weight(message: types.Message, state: FSMContext):
-    if message.text.strip().isdigit():
-        await state.update_data(weight=message.text, mention=message.from_user.get_mention())
-        await message.answer(f'<b>🚩Введіть кількість <u>ОПІКІВ</u> у відсотках\n(має бути одне число❗)</b>')
-        await FixMessage.next()
-
-    else:
-        await state.update_data(weight=message.text, mention=message.from_user.get_mention())
-        await message.answer(
-            f'<b>⛔Некоректне значення!\nСпробуй ще, введіть <u>ВАГУ</u> в кілограмах\n(має бути одне число❗)</b>',
-            reply_markup=fix_keyboard)
-
-
-@dp.message_handler(state=FixMessage.EnterBurns)
-async def enter_weight(message: types.Message, state: FSMContext):
-    await state.update_data(burns=message.text, mention=message.from_user.get_mention())
+    await state.update_data(weight=message.text, mention=message.from_user.get_mention())
     if message.text.strip().isdigit():
         async with state.proxy() as data:
-            weight = int(data.get('weight'))
             burns = int(data.get('burns'))
+            weight = int(data.get('weight'))
             await state.finish()
-        round_weight = round(weight / 10) * 10
         round_burns = round(burns / 10) * 10
+        round_weight = round(weight / 10) * 10
         if weight > 80:
             mill_per_hour = round_burns * 10 + (round_weight - 80) * 10
             drops_per_second = (mill_per_hour / 3600) * 20
+            await bot.send_chat_action(message.chat.id, types.ChatActions.TYPING)
+            # Чекаємо 1 секунди з використанням асинхронності
+            await asyncio.sleep(1)
             await message.answer(
                 f"<b>ВАГА ≈ {round_weight}кг\nОПІКИ ≈ {round_burns}%\nОБ'ЄМ = {mill_per_hour} мл/год\n<u>ШВИДКІСТЬ ВЛИВАННЯ ≈ {drops_per_second:.2f} крапель/секунду</u></b>")
         else:
             mill_per_hour = round_burns * 10
             drops_per_second = (mill_per_hour / 3600) * 20
+            await bot.send_chat_action(message.chat.id, types.ChatActions.TYPING)
+            # Чекаємо 1 секунди з використанням асинхронності
+            await asyncio.sleep(0.5)
             await message.answer(
                 f"<b>ВАГА ≈ {round_weight}кг\nОПІКИ ≈ {round_burns}%\nОБ'ЄМ = {mill_per_hour} мл/год\n<u>ШВИДКІСТЬ ВЛИВАННЯ ≈ {drops_per_second:.2f} крапель/секунду</u></b>")
 
 
     else:
         await state.update_data(text_answer=message.text, mention=message.from_user.get_mention())
+        await bot.send_chat_action(message.chat.id, types.ChatActions.TYPING)
+        # Чекаємо 1 секунди з використанням асинхронності
+        await asyncio.sleep(0.5)
         await message.answer(
-            f'<b>⛔Некоректне значення!\nСпробуй ще, введіть кількість <u>ОПІКІВ</u> у відсотках\n(має бути одне число❗)</b>',
+            f'<b>⛔Некоректне значення!\nСпробуй ще, введіть <u>ВАГУ</u> в кілограмах\n(має бути одне число❗)</b>',
             reply_markup=fix_keyboard)
 
 
@@ -89,7 +106,7 @@ async def cancel_state(call: types.CallbackQuery, state: FSMContext):
     await call.message.delete()
     await state.finish()
 
-    await call.answer("Дані анульовано!🗑", show_alert=True)
+
 
 
 """Шпаргалка"""
@@ -108,7 +125,9 @@ async def calculate_burns(message: types.Message):
     except Exception as e:
             print(e)
 
-
+    await bot.send_chat_action(message.chat.id, types.ChatActions.TYPING)
+    # Чекаємо 1 секунди з використанням асинхронності
+    await asyncio.sleep(0.5)
     await message.answer_document(open("data/препарати.pdf", "rb"), reply_markup=main_button)
 
     logging.info(message.from_user.full_name + " -> pressed [Шпаргалка 📋]")
@@ -128,6 +147,9 @@ async def drugs_menu(message: types.Message):
         print(e)
 
     logging.info(message.from_user.full_name + " -> pressed [Розрахунки препаратів 💉]")
+    await bot.send_chat_action(message.chat.id, types.ChatActions.TYPING)
+    # Чекаємо 1 секунди з використанням асинхронності
+    await asyncio.sleep(0.5)
     await message.answer(text="<b>Виберіть препарат: 💊</b>", reply_markup=drugs_list_keyboard)
 
 
@@ -171,7 +193,6 @@ async def cancel_state(call: types.CallbackQuery, state: FSMContext):
     await call.message.delete()
     await state.finish()
 
-    await call.answer("Дані анульовано!🗑", show_alert=True)
 
 """ Калькулятор препаратів """
 
@@ -179,7 +200,9 @@ async def cancel_state(call: types.CallbackQuery, state: FSMContext):
 async def calculate_drug (call: types.CallbackQuery, state: FSMContext):
 
     await call.message.delete()
-
+    await bot.send_chat_action(call.message.chat.id, types.ChatActions.TYPING)
+    # Чекаємо 1 секунди з використанням асинхронності
+    await asyncio.sleep(0.5)
     await call.message.answer("<b>🚩Введіть <u>%</u>-вість препарату\n(має бути ціле або число через <u>крапку</u>❗)</b>", parse_mode=types.ParseMode.HTML)
     await CalcMessage.EnterPercent.set()
 
@@ -191,11 +214,17 @@ async def enter_weight_drug(message: types.Message, state: FSMContext):
     try:
         float_persent = float(message.text.strip())
         await state.update_data(percent=float_persent, mention=message.from_user.get_mention())
+        await bot.send_chat_action(message.chat.id, types.ChatActions.TYPING)
+        # Чекаємо 1 секунди з використанням асинхронності
+        await asyncio.sleep(0.5)
         await message.answer(
             f'<b>🚩Введіть  <u>дозу препарату в мг</u> яку потрібго ввести\n(має бути ціле або число через <u>крапку</u>❗)1г-1000мг</b>', parse_mode=types.ParseMode.HTML)
         await CalcMessage.next()
     except ValueError:
         await state.update_data(percent=message.text, mention=message.from_user.get_mention())
+        await bot.send_chat_action(message.chat.id, types.ChatActions.TYPING)
+        # Чекаємо 1 секунди з використанням асинхронності
+        await asyncio.sleep(0.5)
         await message.answer(
             f'<b>⛔Некоректне значення!\nСпробуй ще, введіть <u>%</u> препарату\n(має бути ціле або число через <u>крапку</u>❗)</b>',
             reply_markup=fix_keyboard, parse_mode=types.ParseMode.HTML)
@@ -211,10 +240,16 @@ async def enter_weight(message: types.Message, state: FSMContext):
             await state.finish()
         mg_ml = percent * 1000 / 100
         enter_ml = wight / mg_ml
+        await bot.send_chat_action(message.chat.id, types.ChatActions.TYPING)
+        # Чекаємо 1 секунди з використанням асинхронності
+        await asyncio.sleep(1)
         await message.answer(f"<b>Доза введення в обємі: {enter_ml} ml</b>", parse_mode=types.ParseMode.HTML)
 
     except ValueError:
         await state.update_data(text_answer=message.text, mention=message.from_user.get_mention())
+        await bot.send_chat_action(message.chat.id, types.ChatActions.TYPING)
+        # Чекаємо 1 секунди з використанням асинхронності
+        await asyncio.sleep(0.5)
         await message.answer(
             f'<b>⛔Некоректне значення!\nСпробуй ще, введіть  <u>дозу препарату в мг</u> яку потрібго ввести\n(має бути ціле або число через <u>крапку</u>❗) 1г-1000мг</b>',
             reply_markup=fix_keyboard, parse_mode=types.ParseMode.HTML)

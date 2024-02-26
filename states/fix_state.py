@@ -2,8 +2,8 @@ from aiogram.dispatcher.filters.state import StatesGroup, State
 
 
 class FixMessage(StatesGroup):
-    EnterWeight = State()
     EnterBurns = State()
+    EnterWeight = State()
 
 
 class CalcMessage(StatesGroup):
