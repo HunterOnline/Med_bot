@@ -9,3 +9,8 @@ class FixMessage(StatesGroup):
 class CalcMessage(StatesGroup):
     EnterPercent = State()
     EnterWight = State()
+
+
+class PassTestMessage(StatesGroup):
+    ListTest = State()
+    UserPoints = State()

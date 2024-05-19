@@ -6,4 +6,5 @@ main_button = ReplyKeyboardMarkup(
         [KeyboardButton(text="Розрахунки препаратів 💉")],
         [KeyboardButton(text="Шпаргалка 📋")],
 
-    ], resize_keyboard=True, )
+
+    ], resize_keyboard=True, ) # [KeyboardButton(text="Тренуватися🏋️‍♀️")]
