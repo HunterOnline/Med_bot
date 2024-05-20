@@ -29,10 +29,11 @@ async def pass_med_test(message: types.Message, state: FSMContext):
     logging.info(message.from_user.full_name + " -> pressed [Тренуватися🏋️‍♀]")
 
 
-@dp.callback_query_handler(pass_test_callback.filter(action='cancel'))
+@dp.callback_query_handler(pass_test_callback.filter(action='cancel'), state=PassTestMessage.ListTest)
 async def cancel_state(call: types.CallbackQuery, state: FSMContext):
-    await call.message.delete()
     await state.finish()
+    await call.message.delete()
+
 
 
 @dp.callback_query_handler(options_keyboard_callback.filter(), state=PassTestMessage.ListTest)
